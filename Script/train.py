@@ -27,24 +27,24 @@ print("Preprocessing Dataset")
 print(wine_quality.variables)
 
 
-X_t = X.copy()
-X_t['quantity'] = y
-corr_matrix = X_t.corr()
-corr_with_target = corr_matrix['quantity'].sort_values(ascending=False)
+# X_t = X.copy()
+# X_t['quantity'] = y
+# corr_matrix = X_t.corr()
+# corr_with_target = corr_matrix['quantity'].sort_values(ascending=False)
 
-X_t = X_t.drop(columns=['density','chlorides','fixed_acidity'])
-y_t = X_t['quantity']
-X_t = X_t.drop(columns=['quantity'])
+# X_t = X_t.drop(columns=['density','chlorides','fixed_acidity'])
+# y_t = X_t['quantity']
+# X_t = X_t.drop(columns=['quantity'])
 
 print("Splitting train test data")
-# 01 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-X_train, X_test, y_train, y_test = train_test_split(X_t, y_t, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# 02 X_train, X_test, y_train, y_test = train_test_split(X_t, y_t, test_size=0.2, random_state=42)
 
-scaler = StandardScaler()
-scaler.fit(X_train)
+# scaler = StandardScaler()
+# scaler.fit(X_train)
 
-X_train_scaled = scaler.transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# X_train_scaled = scaler.transform(X_train)
+# X_test_scaled = scaler.transform(X_test)
 
 # print("Training Linear Regression Model")
 
@@ -52,19 +52,19 @@ X_test_scaled = scaler.transform(X_test)
 # model.fit(X_train, y_train)
 
 print("Training Linear Regression Model Lasso alpha 0.1")
-model = linear_model.Lasso(alpha=0.1)
-model.fit(X_train_scaled,y_train)
+model = RandomForestRegressor(n_estimators=50,max_depth=10, random_state=0)
+model.fit(X_train,y_train)
 
 model_filename = 'output/model-linear-exp1.pkl'
 os.makedirs(os.path.dirname(model_filename), exist_ok=True)
 joblib.dump(model, model_filename)
 print(f"Model saved to {model_filename}")
 
-r2_score_value = model.score(X_test_scaled, y_test)
+r2_score_value = model.score(X_test, y_test)
 print(f"R^2 Score: {r2_score_value:.2f}")
 
 
-y_pred = model.predict(X_test_scaled)
+y_pred = model.predict(X_test)
 
 mse_value = mean_squared_error(y_test, y_pred)
 print(f"Mean Squared Error (MSE): {mse_value:.2f}")
