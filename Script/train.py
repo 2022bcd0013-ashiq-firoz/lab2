@@ -5,6 +5,8 @@ from sklearn import linear_model
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
 import json
 import os
 import joblib
@@ -25,25 +27,44 @@ print("Preprocessing Dataset")
 print(wine_quality.variables)
 
 
+X_t = X.copy()
+X_t['quantity'] = y
+corr_matrix = X_t.corr()
+corr_with_target = corr_matrix['quantity'].sort_values(ascending=False)
+
+X_t = X_t.drop(columns=['density','chlorides','fixed_acidity'])
+y_t = X_t['quantity']
+X_t = X_t.drop(columns=['quantity'])
+
 print("Splitting train test data")
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# 01 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_t, y_t, test_size=0.2, random_state=42)
 
+scaler = StandardScaler()
+scaler.fit(X_train)
 
-print("Training Linear Regression Model")
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-model = LinearRegression()
-model.fit(X_train, y_train)
+# print("Training Linear Regression Model")
+
+# model = LinearRegression()
+# model.fit(X_train, y_train)
+
+print("Training Linear Regression Model Lasso alpha 0.1")
+model = linear_model.Lasso(alpha=0.1)
+model.fit(X_train_scaled,y_train)
 
 model_filename = 'output/model-linear-exp1.pkl'
 os.makedirs(os.path.dirname(model_filename), exist_ok=True)
 joblib.dump(model, model_filename)
 print(f"Model saved to {model_filename}")
 
-r2_score_value = model.score(X_test, y_test)
+r2_score_value = model.score(X_test_scaled, y_test)
 print(f"R^2 Score: {r2_score_value:.2f}")
 
 
-y_pred = model.predict(X_test)
+y_pred = model.predict(X_test_scaled)
 
 mse_value = mean_squared_error(y_test, y_pred)
 print(f"Mean Squared Error (MSE): {mse_value:.2f}")
@@ -51,11 +72,11 @@ print(f"Mean Squared Error (MSE): {mse_value:.2f}")
 print("Saving as a JSON output")
 
 data = {
-    "Experiment ID": "Exp-01",
-    "Model Type": "Linear Regression",
-    "Hyperparameters": "Default",
-    "Preprocessing-Steps": None,
-    "Feature-Selection-Method": "All Selected",
+    "Experiment ID": "Exp-02",
+    "Model Type": "Linear Regression - Lasso",
+    "Hyperparameters": "Regularization",
+    "Preprocessing-Steps": "Standardization",
+    "Feature-Selection-Method": "correlation-based",
     "Train/Test-Split" : "80-20" ,
     "MSE" : mse_value,
     "R^2 Score" : r2_score_value
