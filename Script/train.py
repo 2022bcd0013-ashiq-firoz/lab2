@@ -36,6 +36,8 @@ print(wine_quality.variables)
 # y_t = X_t['quantity']
 # X_t = X_t.drop(columns=['quantity'])
 
+X = X.drop(columns=['density','fixed_acidity'])
+
 print("Splitting train test data")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 # 02 X_train, X_test, y_train, y_test = train_test_split(X_t, y_t, test_size=0.2, random_state=42)
@@ -52,7 +54,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # model.fit(X_train, y_train)
 
 print("Training Linear Regression Model Lasso alpha 0.1")
-model = RandomForestRegressor(n_estimators=50,max_depth=10, random_state=0)
+model = RandomForestRegressor(n_estimators=100,max_depth=15, random_state=0)
 model.fit(X_train,y_train)
 
 model_filename = 'output/model-linear-exp1.pkl'
